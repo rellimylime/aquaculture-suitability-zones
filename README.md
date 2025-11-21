@@ -67,10 +67,11 @@ west-coast-aquaculture-analysis/
 **Oysters** *(Crassostrea spp.)*
 - Sea surface temperature: 11-30°C
 - Depth range: 0-70 meters below sea level
+- Source: SeaLifeBase
 
-**[Your chosen species]**
-- Sea surface temperature: [min-max]°C
-- Depth range: [min-max] meters below sea level
+**Black Abalone** *(Haliotis cracherodii)*
+- Sea surface temperature: 12.2-18.6°C
+- Depth range: 0-6 meters below sea level
 - Source: SeaLifeBase
 
 ## Methodology
