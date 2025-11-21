@@ -12,11 +12,11 @@ This repository contains a geospatial analysis identifying optimal locations for
 
 ## Repository Structure
 ```
-west-coast-aquaculture-analysis/
+aquaculture-suitability-zones/
 │
 ├── README.md
 ├── .gitignore
-├── west-coast-aquaculture.Rproj
+├── aquaculture-suitability-zones.Rproj
 ├── aquaculture_analysis.qmd
 │
 └── data/
