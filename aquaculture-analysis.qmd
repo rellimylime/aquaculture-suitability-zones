@@ -12,11 +12,19 @@ editor_options:
 
 # README.md Screenshot
 
-![](ADD SCREENSHOT)
+![](aquaculture-suitability-zones-README.png)
 
 # Introduction
 
-Brief description of analysis goals...
+Marine aquaculture represents a critical opportunity for sustainable food production as global seafood demand continues to rise. Unlike land-based meat production, marine aquaculture can provide protein with lower environmental costs when strategically located in suitable environments (Hall et al., 2011). Recent research has demonstrated that global seafood demand could theoretically be met using less than 0.015% of the global ocean area (Gentry et al., 2017), highlighting the importance of identifying optimal locations for development.
+
+This analysis evaluates the potential for marine aquaculture along the US West Coast by identifying Exclusive Economic Zones (EEZs) with suitable environmental conditions for oyster and black abalone cultivation. Using geospatial analysis of sea surface temperature and bathymetry data, we determine which regions offer the greatest area of suitable habitat for each species. The analysis addresses three key questions:
+
+1. Which West Coast EEZs have the largest areas of suitable conditions for oyster aquaculture?
+2. Which regions are most suitable for black abalone cultivation?
+3. How do suitability patterns differ between these two species?
+
+By developing a generalizable workflow, this analysis can be applied to assess aquaculture potential for additional species, supporting evidence-based decision-making for sustainable marine resource development.
 
 # Setup
 
@@ -120,7 +128,7 @@ crs(sst_stack, describe = TRUE)$code == st_crs(wc_df)$epsg
 
 ```{r mean-sst}
 # Calculate mean SST across all years using app()
-sst_mean <- app(sst_stack, mean, na.rn = TRUE)
+sst_mean <- app(sst_stack, mean, na.rm = TRUE)
 
 # Visualize with plot()
 plot(sst_mean)
@@ -186,7 +194,9 @@ depth_rcl_oyster <- classify(depth_resampled, depth_rcl_mat_oyster)
 suitable_zones_oyster <- sst_rcl_oyster * depth_rcl_oyster
 
 # Visualize with plot()
-plot(suitable_zones_oyster, main = "Oyster Suitability\n (1 = Suitable, 0 = Unsuitable)")
+plot(suitable_zones_oyster, 
+     main = "Oyster Suitability\n (1 = Suitable, 0 = Unsuitable)",
+     cex.main = 0.9)
 ```
 
 ## Black Abalone Suitability
@@ -207,6 +217,7 @@ sst_rcl_mat_abalone <- matrix(c(-Inf, 12.2, 0,
                                ncol = 3, 
                                byrow = TRUE)
 
+# Apply reclassification matrix to mean SST raster
 sst_rcl_abalone <- classify(sst_mean_c, sst_rcl_mat_abalone)
 
 # Reclassify depth for black abalone using classify()
@@ -217,13 +228,15 @@ depth_rcl_mat_abalone <- matrix(c(-Inf, -6, 0,
                                  ncol = 3, 
                                  byrow = TRUE)
 
+# Apply reclassification matrix to resampled depth raster
 depth_rcl_abalone <- classify(depth_resampled, depth_rcl_mat_abalone)
 
 # Combine suitability layers 
 suitable_zones_abalone <- sst_rcl_abalone * depth_rcl_abalone
 
 # Visualize with plot()
-plot(suitable_zones_abalone, main = "Black Abalone Suitability\n (1 = Suitable, 0 = Unsuitable)")
+plot(suitable_zones_abalone, main = "Black Abalone Suitability\n (1 = Suitable, 0 = Unsuitable)",
+     cex.main = 0.9)
 ```
 
 # Calculate Suitable Area by EEZ
@@ -292,23 +305,23 @@ test_that("Oyster area calculations are valid", {
 ## Map Oyster Suitability by EEZ
 
 ```{r map-oyster}
-#| fig.width: 10
-#| fig.height: 8
+#| fig.width: 12
+#| fig.height: 10
 
 # Create map using tmap
 tm_shape(area_by_region_oyster_joined) +
-  tm_fill(col = "suitable_area_km2",
-          title = "Suitable Area (km²)",
-          palette = "YlGnBu",
-          style = "quantile") +
+  tm_polygons(
+    fill = "suitable_area_km2",
+    fill.scale = tm_scale_continuous(values = "brewer.yl_gn_bu"),
+    fill.legend = tm_legend(title = "Suitable Area (km²)")
+  ) +
   tm_borders(col = "gray40", lwd = 0.5) +
-  tm_layout(main.title = "Oyster Aquaculture Suitability by EEZ Region",
-            main.title.size = 1.2,
-            legend.outside = TRUE,
-            legend.outside.position = "right",
-            frame = FALSE) +
+  tm_title("Oyster Aquaculture Suitability by EEZ Region") +
   tm_compass(type = "4star", position = c("left", "bottom")) +
-  tm_scale_bar(position = c("left", "bottom"))
+  tm_scalebar(position = c("left", "bottom")) +
+  tm_layout(legend.outside = TRUE,
+            legend.outside.position = "right",
+            frame = FALSE)
 ```
 
 ## Calculate Suitable Area for Black Abalone
@@ -346,7 +359,7 @@ kable(abalone_results,
       digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
-```{r test-abalone-area}
+```{r test-species-area}
 # Test that area calculations are reasonable
 test_that("Black Abalone area calculations are valid", {
   # Check total area > 0
@@ -368,18 +381,19 @@ test_that("Black Abalone area calculations are valid", {
 
 # Create map using tmap
 tm_shape(area_by_region_abalone_joined) +
-  tm_fill(col = "suitable_area_km2",
-          title = "Suitable Area (km²)",
-          palette = "YlOrRd",
-          style = "quantile") +
+  tm_polygons(
+    fill = "suitable_area_km2",
+    fill.scale = tm_scale_continuous(values = "brewer.yl_gn_bu"),
+    fill.legend = tm_legend(title = "Suitable Area (km²)")
+  ) +
   tm_borders(col = "gray40", lwd = 0.5) +
-  tm_layout(main.title = "Black Abalone Aquaculture Suitability by EEZ Region",
-            main.title.size = 1.2,
-            legend.outside = TRUE,
+  tm_title("Black Abalone Aquaculture Suitability by EEZ Region") +
+  tm_compass(type = "4star", 
+             position = c("left", "bottom")) +
+  tm_scalebar(position = c("left", "bottom")) +
+  tm_layout(legend.outside = TRUE,
             legend.outside.position = "right",
-            frame = FALSE) +
-  tm_compass(type = "4star", position = c("left", "bottom")) +
-  tm_scale_bar(position = c("left", "bottom"))
+            frame = FALSE)
 ```
 
 # Generalizable Function
@@ -390,73 +404,96 @@ tm_shape(area_by_region_abalone_joined) +
 
 calculate_suitability <- function(min_temp, max_temp, min_depth, max_depth, species_name) {
   
+  # Validate inputs
+  if (min_temp >= max_temp) {
+    stop("min_temp must be less than max_temp")
+  }
+  
+  if (min_depth >= max_depth) {
+    stop("min_depth must be less than max_depth")
+  }
+  
+  if (!is.character(species_name) || species_name == "") {
+    stop("species_name must be a non-empty string")
+  }
+  
+  # Create reclassification matrix for sea surface temperature
   sst_rcl_matrix <- matrix(c(-Inf, min_temp, 0,
                              min_temp, max_temp, 1, 
                              max_temp, Inf, 0),
                            ncol = 3,
                            byrow = TRUE)
-  sst_rcl <- classify(sst_mean_c,
-                      sst_rcl_matrix)
+  # Apply reclassification matrix to mean SST raster
+  sst_rcl <- classify(sst_mean_c, sst_rcl_matrix)
   
+  
+  # Create reclassification matrix for depth
   depth_rcl_matrix <- matrix(c(-Inf, min_depth, 0,
                              min_depth, max_depth, 1,
                              max_depth, Inf, 0),
                            ncol = 3,
                            byrow = TRUE)
+  # Apply reclassification matrix to resampled depth raster
+  depth_rcl <- classify(depth_resampled, depth_rcl_matrix)
   
-  depth_rcl <- classify(depth_resampled,
-                        depth_rcl_matrix)
-  
+  # Combine temperature and depth suitability using multiplication
   suitable_zones <- sst_rcl * depth_rcl
   
+  # Mask suitable zones to only include areas within EEZ boundaries
   eez_suitable <- mask(suitable_zones, eez_rast)
   
+  # Calculate the area of each raster cell in square kilometers
   cell_area <- cellSize(eez_suitable, unit = "km")
   
+  # Multiply suitable locations (1s) by cell area (unsuitable cells with have 0 area)
   suitable_area <- eez_suitable * cell_area
   
+  # Sum suitable area within each EEZ region
   area_by_region <- zonal(suitable_area, eez_rast, fun = "sum", na.rm = TRUE)
   
+  # Rename the area column to be more descriptive
   names(area_by_region)[2] <- "suitable_area_km2"
   
+  # Join area calculations with EEZ spatial data to add region names
   results_joined <- eez %>% 
     left_join(area_by_region, by = "rgn_id") %>% 
     arrange(desc(suitable_area_km2))
   
+  # Create a summary table showing top 10 regions
   results_table <- results_joined %>% 
     st_drop_geometry() %>% 
     select(rgn, suitable_area_km2) %>% 
     head(10)
   
+  # Create choropleth map showing suitable area by EEZ region
   map <- tm_shape(results_joined) +
-    tm_fill(col = "suitable_area_km2",
-            title = "Suitable Area (km²)",
-            palette = "Greens",
-            style = "quantile") +
+    tm_polygons(
+      fill = "suitable_area_km2",
+      fill.scale = tm_scale_continuous(values = "brewer.yl_gn_bu"),
+      fill.legend = tm_legend(title = "Suitable Area (km²)")
+    ) +
     tm_borders(col = "gray40", lwd = 0.5) +
-    tm_layout(main.title = paste(species_name, "Aquaculture Suitability by EEZ Region"),
-              main.title.size = 1.2,
-              legend.outside = TRUE,
+    tm_title(paste(species_name, "Aquaculture Suitability by EEZ Region")) +
+    tm_compass(type = "4star", position = c("right", "top")) +
+    tm_scalebar(stack = "vertical", position = c("left", "bottom")) +
+    tm_layout(legend.outside = TRUE,
               legend.outside.position = "right",
-              frame = FALSE) +
-    tm_compass(type = "4star", position = c("left", "bottom")) +
-    tm_scale_bar(position = c("left", "bottom"))
+              frame = FALSE)
   
   return(list(
     results = results_table,
     full_data = results_joined,
     map = map
   ))
-  
 }
-
 ```
 
 ## Apply Function to Oysters
 
 ```{r apply-function-oyster}
+#| message: false
 #| fig.width: 10
-#| fig.height: 8
+#| fig.height: 10
 
 # Call function with oyster parameters
 oyster_output <- calculate_suitability(
@@ -467,15 +504,15 @@ oyster_output <- calculate_suitability(
   species_name = "Oyster"
 )
 
-# Display map
-oyster_output$map
-
 # Display results table
 kable(oyster_output$results,
       caption = "Top 10 EEZ Regions for Oyster Aquaculture (Function Output)",
       col.names = c("Region", "Suitable Area (km²)"),
       digits = 2) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
+
+# Display map and table
+print(oyster_output$map)
 ```
 
 ## Apply Function to Black Abalone
@@ -507,21 +544,25 @@ kable(abalone_output$results,
 
 ## Key Findings
 
-Summarize which EEZ regions are most suitable...
+**Oyster Aquaculture**: Central California has the most suitable area (4,069.88 km²), followed by Southern California (3,757.28 km²) and Washington (2,378.31 km²). These three regions contain over 90% of all suitable oyster habitat on the West Coast. Oregon has moderate potential (1,074.27 km²), while Northern California has minimal suitable area.
+
+**Black Abalone Aquaculture**: Total suitable area is dramatically smaller—only 199.88 km² across the entire West Coast. Central California dominates with 152.37 km² (76% of suitable habitat). Washington and Southern California have limited suitable areas, while Oregon and Northern California have none.
+
+**Key Difference**: Black abalone has 20 times less suitable habitat than oysters, potentially due to its narrow temperature tolerance (12.2-18.6°C vs. 11-30°C) and shallow depth requirement (0-6m vs. 0-70m). Both species show peak suitability in Central California, but oysters have viable habitat across all West Coast regions while black abalone is highly restricted.
 
 ## Limitations
 
-Discuss limitations:
-- Temporal resolution (annual averages)
-- Other factors not considered
-- Species requirement assumptions
-- Data accuracy
+- **Temporal resolution**: Annual SST averages (2008-2012) may miss critical seasonal temperature extremes or variations important for specific life stages
+- **Environmental factors excluded**: Does not account for ocean currents, dissolved oxygen, salinity, wave exposure, water quality, or harmful algal blooms
+- **Socioeconomic constraints**: Ignores proximity to markets/infrastructure, conflicts with existing ocean uses, and regulatory/permitting requirements
+- **Species requirements**: Based on optimal growth ranges from SeaLifeBase; may not reflect full tolerance ranges or life-stage-specific needs
+- **Spatial resolution**: Bathymetry resolution (~500m) may be too coarse to accurately represent ideal depths, especially for shallow-water species like black abalone
 
 # Data Sources
 
 **Sea Surface Temperature:**
-- Source: NOAA 5km Daily Global Satellite Sea Surface Temperature Anomaly v3.1
-- URL: 
+- Source: NOAA Coral Reef Watch. NOAA 5km Daily Global Satellite Sea Surface Temperature Anomaly v3.1
+- URL: https://coralreefwatch.noaa.gov/product/5km/index_5km_ssta.php
 
 **Bathymetry:**
 - Source: GEBCO Compilation Group (2022). GEBCO_2022 Grid
