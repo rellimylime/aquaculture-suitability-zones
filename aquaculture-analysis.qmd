@@ -305,8 +305,8 @@ test_that("Oyster area calculations are valid", {
 ## Map Oyster Suitability by EEZ
 
 ```{r map-oyster}
-#| fig.width: 12
-#| fig.height: 10
+#| fig.width: 10
+#| fig.height: 8
 
 # Create map using tmap
 tm_shape(area_by_region_oyster_joined) +
@@ -401,7 +401,6 @@ tm_shape(area_by_region_abalone_joined) +
 ## Create Suitability Function
 
 ```{r create-function}
-
 calculate_suitability <- function(min_temp, max_temp, min_depth, max_depth, species_name) {
   
   # Validate inputs
@@ -493,7 +492,7 @@ calculate_suitability <- function(min_temp, max_temp, min_depth, max_depth, spec
 ```{r apply-function-oyster}
 #| message: false
 #| fig.width: 10
-#| fig.height: 10
+#| fig.height: 8
 
 # Call function with oyster parameters
 oyster_output <- calculate_suitability(
